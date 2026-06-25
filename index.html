@@ -546,7 +546,7 @@ const FOOD_DB = [
   {n:'Red wine',k:85,u:'ml',cat:'drinks'},{n:'White wine',k:82,u:'ml',cat:'drinks'},
   {n:'Skimmed milk',k:34,u:'ml',cat:'drinks'},{n:'Coconut water',k:19,u:'ml',cat:'drinks'},
   // Fast food & meals
-  {n:'Big Mac',k:508,u:'serving',cat:'fastfood',fixed:508},{n:'McDonald\'s fries (large)',k:444,u:'serving',cat:'fastfood',fixed:444},
+  {n:'Big Mac',k:508,u:'serving',cat:'fastfood',fixed:508},{n:'McDonalds fries (large)',k:444,u:'serving',cat:'fastfood',fixed:444},
   {n:'Pepperoni pizza slice',k:298,u:'slice',cat:'fastfood',fixed:298},{n:'Fish and chips (portion)',k:840,u:'serving',cat:'fastfood',fixed:840},
   {n:'Sushi roll (8pc)',k:290,u:'serving',cat:'fastfood',fixed:290},{n:'Caesar salad (restaurant)',k:470,u:'serving',cat:'fastfood',fixed:470},
 ];
@@ -709,7 +709,7 @@ function searchFood() {
     <div class="result-item" onclick="selectFood(${i}, ${JSON.stringify(f).replace(/"/g,'&quot;')})">
       <div>
         <div class="result-name">${f.n}</div>
-        <div class="result-meta">${f.fixed ? 'Fixed serving' : `per 100${f.u}`}</div>
+        <div class="result-meta">${f.fixed ? 'Fixed serving' : 'per 100' + f.u}</div>
       </div>
       <div class="result-kcal">${f.fixed ? f.fixed : f.k} kcal</div>
     </div>
@@ -838,7 +838,9 @@ async function lookupBarcode(barcode, statusEl, weightEntry) {
       return;
     }
 
-    statusEl.textContent = `Found: ${name}`;
+    statusEl.textContent = 'Found: ' + name;
+    window._scanName = name;
+    window._scanKcal = kcal100;
     weightEntry.innerHTML = `
       <div class="weight-entry">
         <h3>${name}</h3>
@@ -847,7 +849,7 @@ async function lookupBarcode(barcode, statusEl, weightEntry) {
           <input class="form-input" type="number" id="scan-amount" placeholder="Amount" min="1">
           <div class="unit-label">g</div>
         </div>
-        <button class="add-btn" style="margin-top:8px" onclick="addScannedFood('${name.replace(/'/g,'\\'')}', ${kcal100})">Add food</button>
+        <button class="add-btn" style="margin-top:8px" onclick="addScannedFood()">Add food</button>
         <span class="cancel-link" onclick="rescan()">Scan another</span>
       </div>`;
     weightEntry.style.display = '';
@@ -859,7 +861,9 @@ async function lookupBarcode(barcode, statusEl, weightEntry) {
   }
 }
 
-function addScannedFood(name, kcal100) {
+function addScannedFood() {
+  const name = window._scanName || '';
+  const kcal100 = window._scanKcal || 0;
   const amount = parseFloat(document.getElementById('scan-amount').value);
   if (!amount || amount <= 0) { toast('Enter a weight'); return; }
   addEntry({ type:'food', name, detail:`${Math.round(amount)}g (scanned)`, kcal: (amount/100)*kcal100 });
